@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         setContent {
             JoshCompassTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
+                    CompassScreen(
                         outerOnAzimuthChange = outerOnAzimuthChange,
                         modifier = Modifier.padding(innerPadding)
                     )
@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 }
 
 @Composable
-fun Greeting(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+fun CompassScreen(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modifier = Modifier) {
     var azimuth by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -89,6 +89,11 @@ fun Greeting(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modifier =
         }
     }
 
+    Compass(azimuth = azimuth, modifier = modifier)
+}
+
+@Composable
+fun Compass(azimuth: Int, modifier: Modifier = Modifier) {
     Text(
         text = "Azimuth: $azimuth",
         modifier = modifier
