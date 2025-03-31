@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import com.example.joshcompass.ui.theme.JoshCompassTheme
 import kotlin.math.floor
 
@@ -120,6 +121,7 @@ fun Compass(azimuth: Int, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = "$azimuth° ${getDirection(azimuth)}",
+            fontSize = 48.sp,
             modifier = modifier
         )
     }
