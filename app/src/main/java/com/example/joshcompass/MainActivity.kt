@@ -79,6 +79,19 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 }
 
+fun getDirection(azimuth: Int): String {
+    return when (azimuth) {
+        in 23..67 -> "NE"
+        in 68..112 -> "E"
+        in 113..157 -> "SE"
+        in 158..202 -> "S"
+        in 203..247 -> "SW"
+        in 248..292 -> "W"
+        in 293..337 -> "NW"
+        else -> "N"
+    }
+}
+
 @Composable
 fun CompassScreen(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modifier = Modifier) {
     var azimuth by remember { mutableIntStateOf(0) }
@@ -95,7 +108,7 @@ fun CompassScreen(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modif
 @Composable
 fun Compass(azimuth: Int, modifier: Modifier = Modifier) {
     Text(
-        text = "Azimuth: $azimuth",
+        text = "$azimuth° ${getDirection(azimuth)}",
         modifier = modifier
     )
 }
