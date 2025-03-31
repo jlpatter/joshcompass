@@ -13,25 +13,32 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.joshcompass.ui.theme.JoshCompassTheme
 import kotlin.math.floor
 
 class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var rotationVectorSensor: Sensor? = null
+    private var innerOnAzimuthChange: ((Int) -> Unit)? = null // Callback to update UI
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val outerOnAzimuthChange = { inner: (Int) -> Unit -> innerOnAzimuthChange = inner }
+
         enableEdgeToEdge()
         setContent {
             JoshCompassTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        outerOnAzimuthChange = outerOnAzimuthChange,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -63,7 +70,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             if (azimuth < 0) azimuth += 360 // Convert to 0-360 range
             val iAzimuth = floor(azimuth).toInt()
 
-            println("Azimuth: $iAzimuth")
+            innerOnAzimuthChange?.invoke(iAzimuth)
         }
     }
 
@@ -73,17 +80,17 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+    var azimuth by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        outerOnAzimuthChange { newAzimuth ->
+            azimuth = newAzimuth
+        }
+    }
+
     Text(
-        text = "Hello $name!",
+        text = "Azimuth: $azimuth",
         modifier = modifier
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    JoshCompassTheme {
-        Greeting("Android")
-    }
 }
