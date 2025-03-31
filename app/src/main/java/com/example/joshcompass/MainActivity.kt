@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -18,7 +19,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.example.joshcompass.ui.theme.JoshCompassTheme
 import kotlin.math.floor
 
@@ -36,7 +39,11 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         enableEdgeToEdge()
         setContent {
             JoshCompassTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = Color.Black,
+                    contentColor = Color.White,
+                ) { innerPadding ->
                     CompassScreen(
                         outerOnAzimuthChange = outerOnAzimuthChange,
                         modifier = Modifier.padding(innerPadding)
@@ -107,8 +114,13 @@ fun CompassScreen(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modif
 
 @Composable
 fun Compass(azimuth: Int, modifier: Modifier = Modifier) {
-    Text(
-        text = "$azimuth° ${getDirection(azimuth)}",
-        modifier = modifier
-    )
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "$azimuth° ${getDirection(azimuth)}",
+            modifier = modifier
+        )
+    }
 }
