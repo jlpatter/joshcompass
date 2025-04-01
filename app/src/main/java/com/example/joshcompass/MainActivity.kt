@@ -8,42 +8,46 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.example.joshcompass.ui.theme.JoshCompassTheme
 import kotlin.math.floor
 
 class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var rotationVectorSensor: Sensor? = null
-    private var innerOnAzimuthChange: ((Int) -> Unit)? = null // Callback to update UI
+    private var innerOnAzimuthChange: ((Float) -> Unit)? = null // Callback to update UI
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-        val outerOnAzimuthChange = { inner: (Int) -> Unit -> innerOnAzimuthChange = inner }
+        val outerOnAzimuthChange = { inner: (Float) -> Unit -> innerOnAzimuthChange = inner }
 
         enableEdgeToEdge()
         setContent {
             JoshCompassTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    containerColor = Color.Black,
-                    contentColor = Color.White,
                 ) { innerPadding ->
                     CompassScreen(
                         outerOnAzimuthChange = outerOnAzimuthChange,
@@ -74,11 +78,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
             SensorManager.getOrientation(rotationMatrix, orientationAngles)
 
-            var azimuth = Math.toDegrees(orientationAngles[0].toDouble())
+            var azimuth = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
             if (azimuth < 0) azimuth += 360 // Convert to 0-360 range
-            val iAzimuth = floor(azimuth).toInt()
 
-            innerOnAzimuthChange?.invoke(iAzimuth)
+            innerOnAzimuthChange?.invoke(azimuth)
         }
     }
 
@@ -101,8 +104,8 @@ fun getDirection(azimuth: Int): String {
 }
 
 @Composable
-fun CompassScreen(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modifier = Modifier) {
-    var azimuth by remember { mutableIntStateOf(0) }
+fun CompassScreen(outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+    var azimuth by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
         outerOnAzimuthChange { newAzimuth ->
@@ -114,15 +117,27 @@ fun CompassScreen(outerOnAzimuthChange: ((Int) -> Unit) -> Unit, modifier: Modif
 }
 
 @Composable
-fun Compass(azimuth: Int, modifier: Modifier = Modifier) {
+fun Compass(azimuth: Float, modifier: Modifier = Modifier) {
+    val iAzimuth: Int = floor(azimuth).toInt()
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "$azimuth° ${getDirection(azimuth)}",
-            fontSize = 48.sp,
-            modifier = modifier
-        )
+        Column {
+            Text(
+                text = "$iAzimuth° ${getDirection(iAzimuth)}",
+                fontSize = 12.em,
+                modifier = modifier.align(Alignment.CenterHorizontally)
+            )
+            Image(
+                painter = painterResource(id = R.drawable.compass),
+                contentDescription = "Compass Image",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(300.dp).graphicsLayer(
+                    rotationZ = 360f - azimuth
+                )
+            )
+        }
     }
 }
