@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.joshcompass.ui.theme.JoshCompassTheme
 import kotlin.math.floor
 
@@ -45,11 +50,13 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
             JoshCompassTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) { innerPadding ->
-                    CompassScreen(
+                    AppNavHost(
+                        navController = navController,
                         outerOnAzimuthChange = outerOnAzimuthChange,
                         modifier = Modifier.padding(innerPadding)
                     )
@@ -90,6 +97,27 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 }
 
+@Composable
+fun AppNavHost(navController: NavHostController, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+    NavHost(navController, startDestination = "main") {
+        composable("main") { CompassScreen(navController, outerOnAzimuthChange = outerOnAzimuthChange, modifier = modifier) }
+        composable("preferences") { PreferencesScreen(navController) }
+    }
+}
+
+@Composable
+fun CompassScreen(navController: NavHostController, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+    var azimuth by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        outerOnAzimuthChange { newAzimuth ->
+            azimuth = newAzimuth
+        }
+    }
+
+    Compass(navController = navController, azimuth = azimuth, modifier = modifier)
+}
+
 fun getDirection(azimuth: Int): String {
     return when (azimuth) {
         in 23..67 -> "NE"
@@ -104,20 +132,7 @@ fun getDirection(azimuth: Int): String {
 }
 
 @Composable
-fun CompassScreen(outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
-    var azimuth by remember { mutableFloatStateOf(0f) }
-
-    LaunchedEffect(Unit) {
-        outerOnAzimuthChange { newAzimuth ->
-            azimuth = newAzimuth
-        }
-    }
-
-    Compass(azimuth = azimuth, modifier = modifier)
-}
-
-@Composable
-fun Compass(azimuth: Float, modifier: Modifier = Modifier) {
+fun Compass(navController: NavHostController, azimuth: Float, modifier: Modifier = Modifier) {
     val iAzimuth: Int = floor(azimuth).toInt()
 
     Box(
@@ -138,6 +153,21 @@ fun Compass(azimuth: Float, modifier: Modifier = Modifier) {
                     rotationZ = 360f - azimuth
                 )
             )
+            Button(
+                onClick = { navController.navigate("preferences") },
+                modifier = modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Open Preferences")
+            }
         }
+    }
+}
+
+@Composable
+fun PreferencesScreen(navController: NavHostController) {
+    Button(
+        onClick = { navController.navigate("main") },
+    ) {
+        Text("Close")
     }
 }
