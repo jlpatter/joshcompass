@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="600"
+   height="860"
+   viewBox="0 0 158.75 227.54166"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="gps_arrow_2.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="1.4378367"
+     inkscape:cx="154.39862"
+     inkscape:cy="269.50209"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path2"
+       style="fill:#ff0000;stroke-width:0.154476"
+       d="M 80.003092,7.1556688 40.205682,112.989 79.783273,82.330828 119.58068,112.989 Z"
+       inkscape:label="NBase" />
+    <path
+       style="fill:#800000;fill-opacity:1;stroke-width:0.154944"
+       d="M 40.596867,113.11995 80.128118,82.499631 80.284367,7.2866178 Z"
+       id="path4"
+       inkscape:label="NShadow" />
+    <path
+       id="path2-8"
+       style="fill:#0000bd;fill-opacity:1;stroke-width:0.154476"
+       d="M 79.647623,218.66691 119.44503,112.83359 79.867433,143.49175 40.070038,112.83359 Z"
+       inkscape:label="SBase" />
+    <path
+       style="fill:#9090ff;fill-opacity:1;stroke-width:0.154944"
+       d="m 119.05385,112.70264 -39.531257,30.6203 -0.15625,75.21302 z"
+       id="path4-8"
+       inkscape:label="SShadow" />
+    <path
+       style="opacity:1;fill:#b3b3b3;fill-opacity:1;stroke-width:0.264583"
+       d="M 40.299256,112.98513 79.862451,82.43866 119.24163,112.80111 79.494424,143.16357 Z"
+       id="path6" />
+    <circle
+       style="opacity:1;fill:#ffcc00;fill-opacity:1;stroke-width:0.221512"
+       id="path8"
+       cx="79.270599"
+       cy="113.68137"
+       r="26.458332" />
+    <circle
+       style="fill:#d4aa00;fill-opacity:1;stroke-width:0.110756"
+       id="path8-1"
+       cx="79.195938"
+       cy="112.9075"
+       r="13.229166" />
+  </g>
+</svg>
