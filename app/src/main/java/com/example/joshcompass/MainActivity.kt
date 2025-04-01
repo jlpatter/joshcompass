@@ -1,5 +1,7 @@
 package com.example.joshcompass
 
+import CompassScreen
+import PreferencesScreen
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -8,42 +10,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.joshcompass.ui.theme.JoshCompassTheme
-import kotlin.math.floor
 
 class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
@@ -100,129 +76,20 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        println("accuracy: $accuracy")
-    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
 }
 
 @Composable
 fun AppNavHost(navController: NavHostController, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
     NavHost(navController, startDestination = "main") {
-        composable("main") { CompassScreen(navController, outerOnAzimuthChange = outerOnAzimuthChange, modifier = modifier) }
-        composable("preferences") { PreferencesScreen(navController) }
-    }
-}
-
-@Composable
-fun CompassScreen(navController: NavHostController, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
-    var azimuth by remember { mutableFloatStateOf(0f) }
-
-    LaunchedEffect(Unit) {
-        outerOnAzimuthChange { newAzimuth ->
-            azimuth = newAzimuth
+        composable("main") {
+            CompassScreen(
+                navController,
+                outerOnAzimuthChange = outerOnAzimuthChange,
+                modifier = modifier)
         }
-    }
-
-    Compass(navController = navController, azimuth = azimuth, modifier = modifier)
-}
-
-fun getDirection(azimuth: Int): String {
-    return when (azimuth) {
-        in 23..67 -> "NE"
-        in 68..112 -> "E"
-        in 113..157 -> "SE"
-        in 158..202 -> "S"
-        in 203..247 -> "SW"
-        in 248..292 -> "W"
-        in 293..337 -> "NW"
-        else -> "N"
-    }
-}
-
-@Composable
-fun Compass(navController: NavHostController, azimuth: Float, modifier: Modifier = Modifier) {
-    val iAzimuth: Int = floor(azimuth).toInt()
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column {
-            Text(
-                text = "$iAzimuth° ${getDirection(iAzimuth)}",
-                fontSize = 12.em,
-                modifier = modifier.align(Alignment.CenterHorizontally)
-            )
-            Image(
-                painter = painterResource(id = R.drawable.gps_arrow_2),
-                contentDescription = "Compass Image",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(300.dp).graphicsLayer(
-                    rotationZ = 360f - azimuth
-                )
-            )
-            Button(
-                onClick = { navController.navigate("preferences") },
-                modifier = modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Open Preferences")
-            }
-        }
-    }
-}
-
-@Composable
-fun PreferencesScreen(navController: NavHostController) {
-
-    var sliderValue by remember { mutableFloatStateOf(0f) }
-    var textValue by remember { mutableStateOf(sliderValue.toString()) }
-
-    val valueRangeMin = -90f
-    val valueRangeMax = 90f
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "Offset (in +/- degrees):")
-            OutlinedTextField(
-                value = textValue,
-                onValueChange = { newValue ->
-                    newValue.toFloatOrNull()?.let { floatValue ->
-                        if (floatValue in valueRangeMin..valueRangeMax) {
-                            textValue = floatValue.toString()
-                            sliderValue = floatValue
-                        }
-                    }
-                },
-                label = { Text("Enter a number") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Slider(
-                value = sliderValue,
-                onValueChange = { newValue ->
-                    sliderValue = newValue
-                    textValue = newValue.toInt().toString()
-                },
-                valueRange = valueRangeMin..valueRangeMax,
-                steps = 0
-            )
-
-            Text(text = "Selected Value: ${sliderValue.toInt()}")
-
-            Button(
-                onClick = { navController.navigate("main") },
-            ) {
-                Text("Close")
-            }
+        composable("preferences") {
+            PreferencesScreen(navController)
         }
     }
 }
