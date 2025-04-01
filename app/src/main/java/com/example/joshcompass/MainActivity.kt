@@ -1,7 +1,6 @@
 package com.example.joshcompass
 
-import CompassScreen
-import PreferencesScreen
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -32,6 +31,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         val outerOnAzimuthChange = { inner: (Float) -> Unit -> innerOnAzimuthChange = inner }
 
+        val sharedPreferences = getPreferences(MODE_PRIVATE)
+
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 ) { innerPadding ->
                     AppNavHost(
                         navController = navController,
+                        sharedPreferences = sharedPreferences,
                         outerOnAzimuthChange = outerOnAzimuthChange,
                         modifier = Modifier.padding(innerPadding)
                     )
@@ -80,16 +82,17 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 }
 
 @Composable
-fun AppNavHost(navController: NavHostController, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+fun AppNavHost(navController: NavHostController, sharedPreferences: SharedPreferences, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
     NavHost(navController, startDestination = "main") {
         composable("main") {
             CompassScreen(
                 navController,
+                sharedPreferences = sharedPreferences,
                 outerOnAzimuthChange = outerOnAzimuthChange,
                 modifier = modifier)
         }
         composable("preferences") {
-            PreferencesScreen(navController)
+            PreferencesScreen(navController, sharedPreferences)
         }
     }
 }

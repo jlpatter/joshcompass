@@ -1,3 +1,6 @@
+package com.example.joshcompass
+
+import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,12 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.core.content.edit
 
 
 @Composable
-fun PreferencesScreen(navController: NavHostController) {
+fun PreferencesScreen(navController: NavHostController, sharedPreferences: SharedPreferences) {
 
-    var sliderValue by remember { mutableFloatStateOf(0f) }
+    var sliderValue by remember { mutableFloatStateOf(sharedPreferences.getInt("offset", 0).toFloat()) }
     var textValue by remember { mutableStateOf(sliderValue.toString()) }
 
     val valueRangeMin = -90f
@@ -71,7 +75,12 @@ fun PreferencesScreen(navController: NavHostController) {
             Text(text = "Selected Value: ${sliderValue.toInt()}")
 
             Button(
-                onClick = { navController.navigate("main") },
+                onClick = {
+                    sharedPreferences.edit {
+                        putInt("offset", sliderValue.toInt())
+                    }
+                    navController.navigate("main")
+                },
             ) {
                 Text("Close")
             }

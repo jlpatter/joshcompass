@@ -1,3 +1,6 @@
+package com.example.joshcompass
+
+import android.content.SharedPreferences
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -19,13 +23,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.navigation.NavHostController
-import com.example.joshcompass.R
 import kotlin.math.floor
 
 
 @Composable
-fun CompassScreen(navController: NavHostController, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+fun CompassScreen(navController: NavHostController, sharedPreferences: SharedPreferences, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
     var azimuth by remember { mutableFloatStateOf(0f) }
+    // Note the inclusion of "-" to flip the sign for setting the direction of the offset properly.
+    val offset by remember { mutableIntStateOf(-sharedPreferences.getInt("offset", 0)) }
 
     LaunchedEffect(Unit) {
         outerOnAzimuthChange { newAzimuth ->
@@ -33,10 +38,10 @@ fun CompassScreen(navController: NavHostController, outerOnAzimuthChange: ((Floa
         }
     }
 
-    Compass(navController = navController, azimuth = azimuth, modifier = modifier)
+    Compass(navController = navController, azimuth = azimuth, offset = offset, modifier = modifier)
 }
 
-fun getDirection(azimuth: Int): String {
+private fun getDirection(azimuth: Int): String {
     return when (azimuth) {
         in 23..67 -> "NE"
         in 68..112 -> "E"
@@ -49,9 +54,20 @@ fun getDirection(azimuth: Int): String {
     }
 }
 
+private fun getFinalAzimuth(azimuth: Float, offset: Int): Float {
+    var finalAzimuth = azimuth + offset.toFloat()
+    if (finalAzimuth < 0f) {
+        finalAzimuth += 360f
+    } else if (finalAzimuth > 360f) {
+        finalAzimuth -= 360f
+    }
+    return finalAzimuth
+}
+
 @Composable
-fun Compass(navController: NavHostController, azimuth: Float, modifier: Modifier = Modifier) {
-    val iAzimuth: Int = floor(azimuth).toInt()
+fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modifier: Modifier = Modifier) {
+    val finalAzimuth = getFinalAzimuth(azimuth, offset)
+    val iAzimuth: Int = floor(finalAzimuth).toInt()
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -68,7 +84,7 @@ fun Compass(navController: NavHostController, azimuth: Float, modifier: Modifier
                 contentDescription = "Compass Image",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(300.dp).graphicsLayer(
-                    rotationZ = 360f - azimuth
+                    rotationZ = 360f - finalAzimuth
                 )
             )
             Button(
