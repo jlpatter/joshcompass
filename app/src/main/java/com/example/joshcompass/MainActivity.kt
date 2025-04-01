@@ -131,7 +131,7 @@ fun Compass(azimuth: Float, modifier: Modifier = Modifier) {
                 modifier = modifier.align(Alignment.CenterHorizontally)
             )
             Image(
-                painter = painterResource(id = R.drawable.gps_arrow),
+                painter = painterResource(id = R.drawable.gps_arrow_2),
                 contentDescription = "Compass Image",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(300.dp).graphicsLayer(
