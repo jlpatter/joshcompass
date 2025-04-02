@@ -75,8 +75,8 @@ fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modif
     ) {
         Column {
             Text(
-                text = "$iAzimuth° ${getDirection(iAzimuth)}",
-                fontSize = 12.em,
+                text = getDirection(iAzimuth),
+                fontSize = 16.em,
                 modifier = modifier.align(Alignment.CenterHorizontally)
             )
             Box(contentAlignment = Alignment.Center) {
@@ -95,6 +95,11 @@ fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modif
                     )
                 )
             }
+            Text(
+                text = "$iAzimuth°",
+                fontSize = 12.em,
+                modifier = modifier.align(Alignment.CenterHorizontally)
+            )
             Button(
                 onClick = { navController.navigate("preferences") },
                 modifier = modifier.align(Alignment.CenterHorizontally)
