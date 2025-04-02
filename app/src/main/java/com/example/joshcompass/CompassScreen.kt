@@ -79,14 +79,22 @@ fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modif
                 fontSize = 12.em,
                 modifier = modifier.align(Alignment.CenterHorizontally)
             )
-            Image(
-                painter = painterResource(id = R.drawable.gps_arrow_2),
-                contentDescription = "Compass Image",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(300.dp).graphicsLayer(
-                    rotationZ = 360f - finalAzimuth
+            Box(contentAlignment = Alignment.Center) {
+                Image(
+                    painter = painterResource(id = R.drawable.background),
+                    contentDescription = "Compass Background",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(350.dp)
                 )
-            )
+                Image(
+                    painter = painterResource(id = R.drawable.gps_arrow_2),
+                    contentDescription = "Compass Rose",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(200.dp).graphicsLayer(
+                        rotationZ = 360f - finalAzimuth
+                    )
+                )
+            }
             Button(
                 onClick = { navController.navigate("preferences") },
                 modifier = modifier.align(Alignment.CenterHorizontally)
