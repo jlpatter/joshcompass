@@ -24,13 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.navigation.NavHostController
 import kotlin.math.floor
+import kotlin.math.round
 
 
 @Composable
-fun CompassScreen(navController: NavHostController, sharedPreferences: SharedPreferences, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+fun CompassScreen(navController: NavHostController, sharedPreferences: SharedPreferences, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, outerOnTempChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
     var azimuth by remember { mutableFloatStateOf(0f) }
     // Note the inclusion of "-" to flip the sign for setting the direction of the offset properly.
     val offset by remember { mutableIntStateOf(-sharedPreferences.getInt("offset", 0)) }
+    var ambientTemp by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
         outerOnAzimuthChange { newAzimuth ->
@@ -38,7 +40,13 @@ fun CompassScreen(navController: NavHostController, sharedPreferences: SharedPre
         }
     }
 
-    Compass(navController = navController, azimuth = azimuth, offset = offset, modifier = modifier)
+    LaunchedEffect(Unit) {
+        outerOnTempChange { newTemp ->
+            ambientTemp = newTemp
+        }
+    }
+
+    Compass(navController = navController, azimuth = azimuth, offset = offset, ambientTemp = ambientTemp, modifier = modifier)
 }
 
 private fun getDirection(azimuth: Int): String {
@@ -65,9 +73,10 @@ private fun getFinalAzimuth(azimuth: Float, offset: Int): Float {
 }
 
 @Composable
-fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modifier: Modifier = Modifier) {
+fun Compass(navController: NavHostController, azimuth: Float, offset: Int, ambientTemp: Float, modifier: Modifier = Modifier) {
     val finalAzimuth = getFinalAzimuth(azimuth, offset)
     val iAzimuth: Int = floor(finalAzimuth).toInt()
+    val finalTemperature = round(ambientTemp * (9 / 5) + 32).toInt()
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -98,6 +107,11 @@ fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modif
             Text(
                 text = "$iAzimuth°",
                 fontSize = 12.em,
+                modifier = modifier.align(Alignment.CenterHorizontally)
+            )
+            Text(
+                text = "$finalTemperature °F",
+                fontSize = 8.em,
                 modifier = modifier.align(Alignment.CenterHorizontally)
             )
             Button(
