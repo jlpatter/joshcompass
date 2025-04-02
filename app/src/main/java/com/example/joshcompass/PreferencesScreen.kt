@@ -29,13 +29,25 @@ import androidx.core.content.edit
 
 @Composable
 fun PreferencesScreen(navController: NavHostController, sharedPreferences: SharedPreferences) {
-
     var sliderValue by remember { mutableFloatStateOf(sharedPreferences.getInt("offset", 0).toFloat()) }
     var textValue by remember { mutableStateOf(sliderValue.toString()) }
+    val valueRangeMin = remember { -90f }
+    val valueRangeMax = remember { 90f }
 
-    val valueRangeMin = -90f
-    val valueRangeMax = 90f
+    Preferences(
+        sliderValue,
+        onSliderValueChange = { sliderValue = it },
+        textValue,
+        onTextValueChange = { textValue = it },
+        valueRangeMin,
+        valueRangeMax,
+        navController,
+        sharedPreferences
+    )
+}
 
+@Composable
+fun Preferences(sliderValue: Float, onSliderValueChange: (Float) -> Unit, textValue: String, onTextValueChange: (String) -> Unit, valueRangeMin: Float, valueRangeMax: Float, navController: NavHostController, sharedPreferences: SharedPreferences) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -50,8 +62,8 @@ fun PreferencesScreen(navController: NavHostController, sharedPreferences: Share
                 onValueChange = { newValue ->
                     newValue.toFloatOrNull()?.let { floatValue ->
                         if (floatValue in valueRangeMin..valueRangeMax) {
-                            textValue = floatValue.toString()
-                            sliderValue = floatValue
+                            onTextValueChange.invoke(floatValue.toString())
+                            onSliderValueChange.invoke(floatValue)
                         }
                     }
                 },
@@ -65,8 +77,8 @@ fun PreferencesScreen(navController: NavHostController, sharedPreferences: Share
             Slider(
                 value = sliderValue,
                 onValueChange = { newValue ->
-                    sliderValue = newValue
-                    textValue = newValue.toInt().toString()
+                    onSliderValueChange.invoke(newValue)
+                    onTextValueChange.invoke(newValue.toInt().toString())
                 },
                 valueRange = valueRangeMin..valueRangeMax,
                 steps = 0
