@@ -10,9 +10,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -23,23 +23,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.navigation.NavHostController
-import kotlin.math.floor
+import kotlin.math.round
 
-
-@Composable
-fun CompassScreen(navController: NavHostController, sharedPreferences: SharedPreferences, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
-    var azimuth by remember { mutableFloatStateOf(0f) }
-    // Note the inclusion of "-" to flip the sign for setting the direction of the offset properly.
-    val offset by remember { mutableIntStateOf(-sharedPreferences.getInt("offset", 0)) }
-
-    LaunchedEffect(Unit) {
-        outerOnAzimuthChange { newAzimuth ->
-            azimuth = newAzimuth
-        }
-    }
-
-    Compass(navController = navController, azimuth = azimuth, offset = offset, modifier = modifier)
-}
 
 private fun getDirection(azimuth: Int): String {
     return when (azimuth) {
@@ -65,17 +50,51 @@ private fun getFinalAzimuth(azimuth: Float, offset: Int): Float {
 }
 
 @Composable
-fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modifier: Modifier = Modifier) {
-    val finalAzimuth = getFinalAzimuth(azimuth, offset)
-    val iAzimuth: Int = floor(finalAzimuth).toInt()
+fun CompassScreen(
+    navController: NavHostController,
+    sharedPreferences: SharedPreferences,
+    outerOnAzimuthChange: ((Float) -> Unit) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var azimuth by remember { mutableFloatStateOf(0f) }
+    // Note the inclusion of "-" to flip the sign for setting the direction of the offset properly.
+    val offset = remember { -sharedPreferences.getInt("offset", 0) }
 
+    LaunchedEffect(Unit) {
+        outerOnAzimuthChange { newAzimuth ->
+            azimuth = newAzimuth
+        }
+    }
+
+    val finalAzimuth by remember { derivedStateOf { getFinalAzimuth(azimuth, offset) } }
+    val invertedFinalAzimuth by remember { derivedStateOf { 360f - finalAzimuth } }
+    val iAzimuth by remember { derivedStateOf { round(finalAzimuth).toInt() } }
+    val direction by remember { derivedStateOf { getDirection(iAzimuth) } }
+
+    Compass(
+        navController = navController,
+        direction,
+        invertedFinalAzimuth,
+        iAzimuth,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun Compass(
+    navController: NavHostController,
+    direction: String,
+    invertedFinalAzimuth: Float,
+    iAzimuth: Int,
+    modifier: Modifier = Modifier
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column {
             Text(
-                text = getDirection(iAzimuth),
+                text = direction,
                 fontSize = 16.em,
                 modifier = modifier.align(Alignment.CenterHorizontally)
             )
@@ -91,7 +110,7 @@ fun Compass(navController: NavHostController, azimuth: Float, offset: Int, modif
                     contentDescription = "Compass Rose",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.size(200.dp).graphicsLayer(
-                        rotationZ = 360f - finalAzimuth
+                        rotationZ = invertedFinalAzimuth
                     )
                 )
             }

@@ -47,7 +47,16 @@ fun PreferencesScreen(navController: NavHostController, sharedPreferences: Share
 }
 
 @Composable
-fun Preferences(sliderValue: Float, onSliderValueChange: (Float) -> Unit, textValue: String, onTextValueChange: (String) -> Unit, valueRangeMin: Float, valueRangeMax: Float, navController: NavHostController, sharedPreferences: SharedPreferences) {
+fun Preferences(
+    sliderValue: Float,
+    onSliderValueChange: (Float) -> Unit,
+    textValue: String,
+    onTextValueChange: (String) -> Unit,
+    valueRangeMin: Float,
+    valueRangeMax: Float,
+    navController: NavHostController,
+    sharedPreferences: SharedPreferences
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
