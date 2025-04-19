@@ -80,55 +80,16 @@ fun CompassScreen(
     val iAltitude by remember { derivedStateOf { round(altitude).toInt() } }
     val direction by remember { derivedStateOf { getDirection(iAzimuth) } }
 
-    Compass(
-        navController = navController,
-        direction,
-        invertedFinalAzimuth,
-        iAzimuth,
-        iAltitude,
-        modifier = modifier
-    )
-}
-
-@Composable
-fun Compass(
-    navController: NavHostController,
-    direction: String,
-    invertedFinalAzimuth: Float,
-    iAzimuth: Int,
-    iAltitude: Int,
-    modifier: Modifier = Modifier
-) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column {
-            Text(
-                text = direction,
-                fontSize = 16.em,
-                modifier = modifier.align(Alignment.CenterHorizontally)
-            )
-            Box(contentAlignment = Alignment.Center) {
-                Image(
-                    painter = painterResource(id = R.drawable.background),
-                    contentDescription = "Compass Background",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(350.dp)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.gps_arrow_2),
-                    contentDescription = "Compass Rose",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(200.dp).graphicsLayer(
-                        rotationZ = invertedFinalAzimuth
-                    )
-                )
-            }
-            Text(
-                text = "$iAzimuth°",
-                fontSize = 12.em,
-                modifier = modifier.align(Alignment.CenterHorizontally)
+            Compass(
+                direction,
+                invertedFinalAzimuth,
+                iAzimuth,
+                modifier = modifier
             )
             Text(
                 text = "$iAltitude ft ASL",
@@ -142,5 +103,42 @@ fun Compass(
                 Text("Open Preferences")
             }
         }
+    }
+}
+
+@Composable
+fun Compass(
+    direction: String,
+    invertedFinalAzimuth: Float,
+    iAzimuth: Int,
+    modifier: Modifier = Modifier
+) {
+    Column {
+        Text(
+            text = direction,
+            fontSize = 16.em,
+            modifier = modifier.align(Alignment.CenterHorizontally)
+        )
+        Box(contentAlignment = Alignment.Center) {
+            Image(
+                painter = painterResource(id = R.drawable.background),
+                contentDescription = "Compass Background",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(350.dp)
+            )
+            Image(
+                painter = painterResource(id = R.drawable.gps_arrow_2),
+                contentDescription = "Compass Rose",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(200.dp).graphicsLayer(
+                    rotationZ = invertedFinalAzimuth
+                )
+            )
+        }
+        Text(
+            text = "$iAzimuth°",
+            fontSize = 12.em,
+            modifier = modifier.align(Alignment.CenterHorizontally)
+        )
     }
 }
