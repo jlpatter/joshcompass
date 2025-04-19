@@ -54,11 +54,13 @@ fun CompassScreen(
     navController: NavHostController,
     sharedPreferences: SharedPreferences,
     outerOnAzimuthChange: ((Float) -> Unit) -> Unit,
+    outerOnAltitudeChange: ((Float) -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var azimuth by remember { mutableFloatStateOf(0f) }
     // Note the inclusion of "-" to flip the sign for setting the direction of the offset properly.
     val offset = remember { -sharedPreferences.getInt("offset", 0) }
+    var altitude by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
         outerOnAzimuthChange { newAzimuth ->
@@ -66,9 +68,16 @@ fun CompassScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        outerOnAltitudeChange { newAltitude ->
+            altitude = newAltitude
+        }
+    }
+
     val finalAzimuth by remember { derivedStateOf { getFinalAzimuth(azimuth, offset) } }
     val invertedFinalAzimuth by remember { derivedStateOf { 360f - finalAzimuth } }
     val iAzimuth by remember { derivedStateOf { round(finalAzimuth).toInt() } }
+    val iAltitude by remember { derivedStateOf { round(altitude).toInt() } }
     val direction by remember { derivedStateOf { getDirection(iAzimuth) } }
 
     Compass(
@@ -76,6 +85,7 @@ fun CompassScreen(
         direction,
         invertedFinalAzimuth,
         iAzimuth,
+        iAltitude,
         modifier = modifier
     )
 }
@@ -86,6 +96,7 @@ fun Compass(
     direction: String,
     invertedFinalAzimuth: Float,
     iAzimuth: Int,
+    iAltitude: Int,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -117,6 +128,11 @@ fun Compass(
             Text(
                 text = "$iAzimuth°",
                 fontSize = 12.em,
+                modifier = modifier.align(Alignment.CenterHorizontally)
+            )
+            Text(
+                text = "$iAltitude ft ASL",
+                fontSize = 8.em,
                 modifier = modifier.align(Alignment.CenterHorizontally)
             )
             Button(

@@ -24,7 +24,9 @@ import com.example.joshcompass.ui.theme.JoshCompassTheme
 class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var rotationVectorSensor: Sensor? = null
+    private var pressureSensor: Sensor? = null
     private var innerOnAzimuthChange: ((Float) -> Unit)? = null // Callback to update UI
+    private var innerOnAltitudeChange: ((Float) -> Unit)? = null // Callback to update UI
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +34,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
         val outerOnAzimuthChange = { inner: (Float) -> Unit -> innerOnAzimuthChange = inner }
+        val outerOnAltitudeChange = { inner: (Float) -> Unit -> innerOnAltitudeChange = inner }
 
         val sharedPreferences = getPreferences(MODE_PRIVATE)
 
@@ -47,6 +51,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                         navController = navController,
                         sharedPreferences = sharedPreferences,
                         outerOnAzimuthChange = outerOnAzimuthChange,
+                        outerOnAltitudeChange = outerOnAltitudeChange,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -58,6 +63,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         super.onResume()
         rotationVectorSensor?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_FASTEST)
+        }
+        pressureSensor?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
     }
 
@@ -78,6 +86,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             if (azimuth < 0) azimuth += 360 // Convert to 0-360 range
 
             innerOnAzimuthChange?.invoke(azimuth)
+        } else if (event?.sensor?.type == Sensor.TYPE_PRESSURE) {
+            val pressure = event.values[0]
+
+            val altitudeFeet = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, pressure) * 3.28084f
+
+            innerOnAltitudeChange?.invoke(altitudeFeet)
         }
     }
 
@@ -85,13 +99,20 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 }
 
 @Composable
-fun AppNavHost(navController: NavHostController, sharedPreferences: SharedPreferences, outerOnAzimuthChange: ((Float) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+fun AppNavHost(
+    navController: NavHostController,
+    sharedPreferences: SharedPreferences,
+    outerOnAzimuthChange: ((Float) -> Unit) -> Unit,
+    outerOnAltitudeChange: ((Float) -> Unit) -> Unit,
+    modifier: Modifier = Modifier
+) {
     NavHost(navController, startDestination = "main") {
         composable("main") {
             CompassScreen(
                 navController,
                 sharedPreferences = sharedPreferences,
                 outerOnAzimuthChange = outerOnAzimuthChange,
+                outerOnAltitudeChange = outerOnAltitudeChange,
                 modifier = modifier)
         }
         composable("preferences") {
