@@ -28,11 +28,13 @@ import androidx.core.content.edit
 
 
 @Composable
-fun PreferencesScreen(navController: NavHostController, sharedPreferences: SharedPreferences) {
+fun PreferencesScreen(navController: NavHostController, sharedPreferences: SharedPreferences, onPressureASLChange: (Float) -> Unit) {
     var sliderValue by remember { mutableFloatStateOf(sharedPreferences.getInt("offset", 0).toFloat()) }
     var textValue by remember { mutableStateOf(sliderValue.toString()) }
     val valueRangeMin = remember { -90f }
     val valueRangeMax = remember { 90f }
+
+    var pressureTextValue by remember { mutableStateOf(Utils.getPressureASL(sharedPreferences)) }
 
     Preferences(
         sliderValue,
@@ -41,6 +43,9 @@ fun PreferencesScreen(navController: NavHostController, sharedPreferences: Share
         onTextValueChange = { textValue = it },
         valueRangeMin,
         valueRangeMax,
+        pressureTextValue,
+        onPressureTextValueChange = { pressureTextValue = it },
+        onPressureASLChange,
         navController,
         sharedPreferences
     )
@@ -54,6 +59,9 @@ fun Preferences(
     onTextValueChange: (String) -> Unit,
     valueRangeMin: Float,
     valueRangeMax: Float,
+    pressureTextValue: String,
+    onPressureTextValueChange: (String) -> Unit,
+    onPressureASLChange: (Float) -> Unit,
     navController: NavHostController,
     sharedPreferences: SharedPreferences
 ) {
@@ -95,15 +103,29 @@ fun Preferences(
 
             Text(text = "Selected Value: ${sliderValue.toInt()}")
 
+            Spacer(modifier = Modifier.height(50.dp))
+
+            OutlinedTextField(
+                value = pressureTextValue,
+                onValueChange = { newValue ->
+                    onPressureTextValueChange.invoke(newValue)
+                },
+                label = { Text("Enter pressure at sea level (in inHg)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Button(
                 onClick = {
                     sharedPreferences.edit {
                         putInt("offset", sliderValue.toInt())
+                        putString("pressureASL", pressureTextValue)
+                        onPressureASLChange.invoke(pressureTextValue.toFloat() * 33.863888f) // Convert from inHg to hPa
                     }
                     navController.navigate("main")
                 },
             ) {
-                Text("Close")
+                Text("Save & Close")
             }
         }
     }

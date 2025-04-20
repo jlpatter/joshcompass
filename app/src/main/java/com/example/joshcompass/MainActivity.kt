@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private var pressureSensor: Sensor? = null
     private var innerOnAzimuthChange: ((Float) -> Unit)? = null // Callback to update UI
     private var innerOnAltitudeChange: ((Float) -> Unit)? = null // Callback to update UI
+    private var pressureASL: Float? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +41,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
         val sharedPreferences = getPreferences(MODE_PRIVATE)
 
+        val pressureASLTxt = Utils.getPressureASL(sharedPreferences)
+        pressureASL = pressureASLTxt.toFloat() * 33.863888f // Convert from inHg to hPa
+
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -52,6 +56,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                         sharedPreferences = sharedPreferences,
                         outerOnAzimuthChange = outerOnAzimuthChange,
                         outerOnAltitudeChange = outerOnAltitudeChange,
+                        onPressureASLChange = { pressureASL = it },
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -89,9 +94,14 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         } else if (event?.sensor?.type == Sensor.TYPE_PRESSURE) {
             val pressure = event.values[0]
 
-            val altitudeFeet = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, pressure) * 3.28084f
-
-            innerOnAltitudeChange?.invoke(altitudeFeet)
+            pressureASL?.let { pASL ->
+                val altitudeFeet = SensorManager.getAltitude(pASL, pressure) * 3.28084f
+                innerOnAltitudeChange?.invoke(altitudeFeet)
+            } ?: run {
+                // This block should almost never run.
+                val altitudeFeet = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, pressure) * 3.28084f
+                innerOnAltitudeChange?.invoke(altitudeFeet)
+            }
         }
     }
 
@@ -104,6 +114,7 @@ fun AppNavHost(
     sharedPreferences: SharedPreferences,
     outerOnAzimuthChange: ((Float) -> Unit) -> Unit,
     outerOnAltitudeChange: ((Float) -> Unit) -> Unit,
+    onPressureASLChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(navController, startDestination = "main") {
@@ -116,7 +127,7 @@ fun AppNavHost(
                 modifier = modifier)
         }
         composable("preferences") {
-            PreferencesScreen(navController, sharedPreferences)
+            PreferencesScreen(navController, sharedPreferences, onPressureASLChange)
         }
     }
 }
