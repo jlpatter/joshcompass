@@ -103,7 +103,7 @@ fun Preferences(
 
             Text(text = "Selected Value: ${sliderValue.toInt()}")
 
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             OutlinedTextField(
                 value = pressureTextValue,
@@ -114,6 +114,8 @@ fun Preferences(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
