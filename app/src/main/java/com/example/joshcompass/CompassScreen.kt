@@ -2,9 +2,11 @@ package com.example.joshcompass
 
 import android.content.SharedPreferences
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -54,11 +56,13 @@ fun CompassScreen(
     navController: NavHostController,
     sharedPreferences: SharedPreferences,
     outerOnAzimuthChange: ((Float) -> Unit) -> Unit,
+    outerOnAltitudeChange: ((Float) -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var azimuth by remember { mutableFloatStateOf(0f) }
     // Note the inclusion of "-" to flip the sign for setting the direction of the offset properly.
     val offset = remember { -sharedPreferences.getInt("offset", 0) }
+    var altitude by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
         outerOnAzimuthChange { newAzimuth ->
@@ -66,65 +70,71 @@ fun CompassScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        outerOnAltitudeChange { newAltitude ->
+            altitude = newAltitude
+        }
+    }
+
     val finalAzimuth by remember { derivedStateOf { getFinalAzimuth(azimuth, offset) } }
     val invertedFinalAzimuth by remember { derivedStateOf { 360f - finalAzimuth } }
     val iAzimuth by remember { derivedStateOf { round(finalAzimuth).toInt() } }
+    val iAltitude by remember { derivedStateOf { round(altitude).toInt() } }
     val direction by remember { derivedStateOf { getDirection(iAzimuth) } }
 
-    Compass(
-        navController = navController,
-        direction,
-        invertedFinalAzimuth,
-        iAzimuth,
-        modifier = modifier
-    )
-}
-
-@Composable
-fun Compass(
-    navController: NavHostController,
-    direction: String,
-    invertedFinalAzimuth: Float,
-    iAzimuth: Int,
-    modifier: Modifier = Modifier
-) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column {
-            Text(
-                text = direction,
-                fontSize = 16.em,
-                modifier = modifier.align(Alignment.CenterHorizontally)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Compass(
+                direction,
+                invertedFinalAzimuth,
+                iAzimuth,
             )
-            Box(contentAlignment = Alignment.Center) {
-                Image(
-                    painter = painterResource(id = R.drawable.background),
-                    contentDescription = "Compass Background",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(350.dp)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.gps_arrow_2),
-                    contentDescription = "Compass Rose",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(200.dp).graphicsLayer(
-                        rotationZ = invertedFinalAzimuth
-                    )
-                )
-            }
             Text(
-                text = "$iAzimuth°",
+                text = "$iAltitude ft ASL",
                 fontSize = 12.em,
-                modifier = modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.padding(32.dp),
             )
             Button(
                 onClick = { navController.navigate("preferences") },
-                modifier = modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.padding(32.dp),
             ) {
                 Text("Open Preferences")
             }
         }
     }
+}
+
+@Composable
+fun Compass(
+    direction: String,
+    invertedFinalAzimuth: Float,
+    iAzimuth: Int,
+) {
+    Text(
+        text = direction,
+        fontSize = 16.em,
+    )
+    Box(contentAlignment = Alignment.Center) {
+        Image(
+            painter = painterResource(id = R.drawable.background),
+            contentDescription = "Compass Background",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(350.dp)
+        )
+        Image(
+            painter = painterResource(id = R.drawable.gps_arrow_2),
+            contentDescription = "Compass Rose",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(200.dp).graphicsLayer(
+                rotationZ = invertedFinalAzimuth
+            )
+        )
+    }
+    Text(
+        text = "$iAzimuth°",
+        fontSize = 12.em,
+    )
 }
